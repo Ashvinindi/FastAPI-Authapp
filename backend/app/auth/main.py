@@ -1,18 +1,20 @@
-from ast import Dict
+import os
 from typing import Dict
 from fastapi import APIRouter, Depends, FastAPI, status, HTTPException
 from sqlalchemy.orm import Session
-#from app.auth import models, auth_database, schemas, utils
-from app.database import get_db
+from app.database import Base, engine, get_db
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError
 from app.auth import models, schemas, utils
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
-SECRET_KEY = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback_default_secret_key_for_dev")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 # Instantiate OAuth2PasswordBearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login") 
@@ -27,6 +29,20 @@ def create_access_token(data: dict):
     return encode_jwt
 
 app = FastAPI()
+Base.metadata.create_all(bind=engine)
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/signup", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 

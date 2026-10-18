@@ -1,26 +1,34 @@
+import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 
-MYSQL_USER = "root"
-MYSQL_PASSWORD = ""
-MYSQL_HOST = "localhost"
-MYSQL_PORT = "3306"
-MYSQL_DATABASE = "fastapi_db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    mysql_user = os.getenv("MYSQL_USER", "root")
+    mysql_password = os.getenv("MYSQL_PASSWORD", "123456")
+    mysql_host = os.getenv("MYSQL_HOST")
+    mysql_port = os.getenv("MYSQL_PORT", "3306")
+    mysql_database = os.getenv("MYSQL_DATABASE", "fastapi_db")
 
-DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+    if mysql_host:
+        DATABASE_URL = (
+            f"mysql+pymysql://{mysql_user}:{mysql_password}"
+            f"@{mysql_host}:{mysql_port}/{mysql_database}"
+        )
+    else:
+        DATABASE_URL = "sqlite:///./fastapi.db"
 
-engine = create_engine(DATABASE_URL)
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
+Base = declarative_base()
 
-sessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 def get_db():
-    db = sessionLocal()
-    try: 
+    db = SessionLocal()
+    try:
         yield db
     finally:
         db.close()
-
-
-Base = declarative_base()
