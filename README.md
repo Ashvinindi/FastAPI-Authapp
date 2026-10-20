@@ -9,10 +9,10 @@ source myenv/bin/activate    # On macOS/Linux
 #myenv\Scripts\activate     # On Windows
 
 Install Backend dependencies 
-* ** pip install -r requirements.txt
+*  pip install -r requirements.txt
 
 run the fastapi server
-* **
+* 
 uvicorn app.auth.main:app --reload --host 0.0.0.0 --port 8000
 
 Save and push to the GitHub 
