@@ -16,7 +16,7 @@ run the fastapi server
 uvicorn app.auth.main:app --reload --host 0.0.0.0 --port 8000
 
 Save and push to the GitHub 
-* ** git add README.md
+* git add README.md
 git commit -m "add manual non-docker setup instructions to README"
 git push origin main
 
